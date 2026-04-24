@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tracking Key Market Moves on Iran War</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --gray-light: #f9f9f9;
+            --gray-text: #666666;
+            --red: #E63939;
+            --green: #2E7D32;
+            --border: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .timestamp {
+            color: var(--gray-text);
+            font-size: 0.95rem;
+            margin-bottom: 2.5rem;
+            font-weight: 400;
+        }
+
+        .data-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #000000;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #000000;
+            color: var(--gray-text);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .change-header {
+            max-width: 220px;
+            text-align: right;
+        }
+
+        .metric {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .change-container {
+            text-align: right;
+        }
+
+        .change {
+            font-weight: 500;
+            font-size: 1rem;
+            display: block;
+        }
+
+        .raw-price {
+            font-size: 0.75rem;
+            color: #999;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .text-red { color: var(--red); }
+        .text-green { color: var(--green); }
+        .text-error { color: #E63939; font-size: 0.9rem; font-weight: 600; }
+
+        .note {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-section {
+            margin-top: 3rem;
+            border-top: 1px solid #eee;
+            padding-top: 2rem;
+            min-height: 450px;
+        }
+
+        .chart-title {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .refresh-btn {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 10px 20px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 2rem;
+            transition: opacity 0.2s;
+        }
+
+        .refresh-btn:hover {
+            opacity: 0.8;
+        }
+
+        .loading {
+            font-size: 0.8rem;
+            color: var(--gray-text);
+            display: none;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .data-row { flex-direction: column; align-items: flex-start; gap: 5px; }
+            .table-header { justify-content: flex-end; }
+            .change-container { text-align: left; }
+            .change-header { max-width: 180px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tracking Key Market Moves on Iran War</h1>
+        <div class="timestamp" id="timestamp">Updated: Loading...</div>
+
+        <div class="data-grid">
+            <div class="table-header">
+                <span></span>
+                <span class="change-header">Change since<br>start of war</span>
+            </div>
+
+            <div class="data-row">
+                <span class="metric">Brent Oil Futures</span>
+                <div class="change-container">
+                    <span class="change" id="brent-row">Loading...</span>
+                    <span class="raw-price" id="brent-price"></span>
+                </div>
+            </div>
+
+            <div class="data-row">
+                <span class="metric">US Gasoline Futures</span>
+                <div class="change-container">
+                    <span class="change" id="gas-row">Loading...</span>
+                    <span class="raw-price" id="gas-price"></span>
+                </div>
+            </div>
+
+            <div class="data-row">
+                <span class="metric">European Benchmark Natural Gas Futures</span>
+                <div class="change-container">
+                    <span class="change" id="ttf-row">Loading...</span>
+                    <span class="raw-price" id="ttf-price"></span>
+                </div>
+            </div>
+
+            <div class="data-row">
+                <span class="metric">Global Stocks</span>
+                <div class="change-container">
+                    <span class="change" id="stocks-row">Loading...</span>
+                    <span class="raw-price" id="stocks-price"></span>
+                </div>
+            </div>
+
+            <div class="data-row">
+                <span class="metric">Bloomberg Dollar Spot Index</span>
+                <div class="change-container">
+                    <span class="change" id="dxy-row">Loading...</span>
+                    <span class="raw-price" id="dxy-price"></span>
+                </div>
+            </div>
+
+            <div class="data-row">
+                <span class="metric">US 10-Year Yield</span>
+                <div class="change-container">
+                    <span class="change" id="yield-row">Loading...</span>
+                    <span class="raw-price" id="yield-price"></span>
+                </div>
+            </div>
+
+            <div class="data-row">
+                <span class="metric">Gold Spot Futures</span>
+                <div class="change-container">
+                    <span class="change" id="gold-row">Loading...</span>
+                    <span class="raw-price" id="gold-price"></span>
+                </div>
+            </div>
+
+            <div class="data-row">
+                <span class="metric">BTCUSD</span>
+                <div class="change-container">
+                    <span class="change" id="btc-row">Loading...</span>
+                    <span class="raw-price" id="btc-price"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="note">Note: Pre-war baseline is Feb. 27, 2026.</div>
+
+        <div class="chart-section">
+            <div class="chart-title">Brent Oil Price Trend</div>
+            <div id="tradingview_widget"></div>
+        </div>
+
+        <div class="chart-section">
+            <div class="chart-title">XAUUSD Price Trend</div>
+            <div id="tradingview_xauusd_widget"></div>
+        </div>
+
+        <button class="refresh-btn" onclick="initDashboard()">Refresh Data</button>
+        <span id="loading-indicator" class="loading">Updating...</span>
+    </div>
+
+    <script>
+        const MAPPING = {
+            "brent-row": { ticker: "BZ=F", type: "pct", priceId: "brent-price" },
+            "gas-row": { ticker: "RB=F", type: "pct", priceId: "gas-price" },
+            "ttf-row": { ticker: "TTF=F", type: "pct", priceId: "ttf-price" },
+            "stocks-row": { ticker: "URTH", type: "pct", priceId: "stocks-price" },
+            "dxy-row": { ticker: "DX-Y.NYB", type: "pct", priceId: "dxy-price" },
+            "yield-row": { ticker: "^TNX", type: "ppts", priceId: "yield-price" },
+            "gold-row": { ticker: "GC=F", type: "pct", priceId: "gold-price" },
+            "btc-row": { ticker: "BTC-USD", type: "pct", priceId: "btc-price" }
+        };
+
+        function updateTimestamp() {
+            const now = new Date();
+            const options = {
+                year: 'numeric', month: 'long', day: 'numeric',
+                hour: 'numeric', minute: 'numeric', hour12: true,
+                timeZone: 'Asia/Singapore'
+            };
+            const timeString = new Intl.DateTimeFormat('en-US', options).format(now);
+            document.getElementById('timestamp').innerText = `Updated: ${timeString} GMT+8`;
+        }
+
+        async function fetchPrices(tickers) {
+            const params = new URLSearchParams({ symbols: tickers.join(',') });
+            const response = await fetch(`/api/quote?${params.toString()}`);
+
+            if (!response.ok) {
+                throw new Error(`Quote API returned ${response.status}`);
+            }
+
+            return response.json();
+        }
+
+        function formatChange(current, baseline, type) {
+            if (current === null || current === undefined || baseline === null || baseline === undefined) {
+                return '<span class="text-error">Data unavailable</span>';
+            }
+
+            let valStr = "";
+            let isPos = false;
+
+            if (type === 'ppts') {
+                const delta = current - baseline;
+                valStr = `${delta > 0 ? '+' : ''}${delta.toFixed(2)}ppts`;
+                isPos = delta >= 0;
+            } else {
+                const deltaPct = ((current - baseline) / baseline) * 100;
+                valStr = `${deltaPct > 0 ? '+' : ''}${deltaPct.toFixed(1)}%`;
+                isPos = deltaPct >= 0;
+            }
+
+            const symbol = isPos ? '▲' : '▼';
+            const colorClass = isPos ? 'text-green' : 'text-red';
+            return `<span class="${colorClass}">${symbol} ${valStr}</span>`;
+        }
+
+        function renderTradingViewWidget(containerId, symbol) {
+            if (!window.TradingView) return;
+
+            new TradingView.widget({
+                "width": "100%",
+                "height": 400,
+                "symbol": symbol,
+                "interval": "D",
+                "timezone": "Asia/Singapore",
+                "theme": "light",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#f1f3f6",
+                "enable_publishing": false,
+                "allow_symbol_change": false,
+                "container_id": containerId,
+                "hide_side_toolbar": false
+            });
+        }
+
+        function renderCharts() {
+            const charts = [
+                { containerId: "tradingview_widget", symbol: "TVC:UKOIL" },
+                { containerId: "tradingview_xauusd_widget", symbol: "OANDA:XAUUSD" }
+            ];
+
+            for (const chart of charts) {
+                const chartContainer = document.getElementById(chart.containerId);
+
+                if (chartContainer.children.length === 0) {
+                    renderTradingViewWidget(chart.containerId, chart.symbol);
+                }
+            }
+        }
+
+        async function initDashboard() {
+            const loader = document.getElementById('loading-indicator');
+            loader.style.display = 'inline';
+
+            updateTimestamp();
+
+            const tickers = Object.values(MAPPING).map((config) => config.ticker);
+
+            try {
+                const prices = await fetchPrices(tickers);
+
+                for (const [id, config] of Object.entries(MAPPING)) {
+                    const quote = prices[config.ticker] ?? {};
+                    const price = quote.current ?? null;
+                    const baseline = quote.baseline ?? null;
+
+                    document.getElementById(id).innerHTML = formatChange(price, baseline, config.type);
+
+                    const priceSpan = document.getElementById(config.priceId);
+                    priceSpan.innerText = price !== null && baseline !== null
+                        ? `(Current: ${price.toFixed(2)} | Feb. 27: ${baseline.toFixed(2)})`
+                        : `(Data unavailable)`;
+                }
+            } catch (error) {
+                console.error('Error loading prices:', error);
+
+                for (const [id, config] of Object.entries(MAPPING)) {
+                    document.getElementById(id).innerHTML = '<span class="text-error">Data unavailable</span>';
+                    document.getElementById(config.priceId).innerText = '(API error)';
+                }
+            }
+
+            renderCharts();
+
+            loader.style.display = 'none';
+        }
+
+        window.addEventListener('DOMContentLoaded', initDashboard);
+    </script>
+</body>
+</html>
